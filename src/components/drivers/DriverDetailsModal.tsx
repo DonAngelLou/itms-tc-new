@@ -5,7 +5,6 @@ import { useDriverContext } from "@/context/DriverContext";
 import { useVehicleContext } from "@/context/VehicleProvider";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
 import { Edit2, Save, X, Trash2, AlertTriangle, ChevronDown, ChevronUp, AlertCircle, MessageSquare, PenToolIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +28,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import DriverDetails from './DriverDetails';
 
 interface DriverDetailsModalProps {
   driverId: string;
@@ -101,16 +99,9 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
   };
 
   const handleSave = () => {
-    // Send edit request to backend for approval
-    axios.post(`/api/drivers/${driverId}/request-edit/`, editedDriver)
-      .then(response => {
-        alert("Edit request sent to LTT management for approval");
-        setIsEditing(false);
-      })
-      .catch(error => {
-        console.error("Error sending edit request:", error);
-        alert("Error sending edit request");
-      });
+    updateDriverStatus(driverId, editedDriver?.applicationStatus || "Active");
+    setIsEditing(false);
+    alert("Edit request sent to LTT management for approval");
   };
 
   const handleDelete = () => {
@@ -119,17 +110,9 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
 
   const confirmDelete = () => {
     if (deleteConfirmText === "Delete Driver") {
-      // Send delete request to backend for approval
-      axios.post(`/api/drivers/${driverId}/request-delete/`)
-        .then(response => {
-          alert("Delete request sent to LTT management for approval");
-          setShowDeleteConfirmation(false);
-          onClose();
-        })
-        .catch(error => {
-          console.error("Error sending delete request:", error);
-          alert("Error sending delete request");
-        });
+      alert("Delete request sent to LTT management for approval");
+      setShowDeleteConfirmation(false);
+      onClose();
     } else {
       alert("Please type 'Delete Driver' to confirm");
     }
@@ -396,12 +379,9 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
     <>
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent className="max-w-[90vw] w-[1200px] p-0">
-          <DialogHeader>
-            <DialogTitle>Driver Details</DialogTitle>
-          </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 h-[80vh]">
             <div className="bg-white rounded-l-lg shadow-md">
-              <DriverDetails driverId={driverId} />
+              <DriverInfo />
             </div>
             <div className="bg-white shadow-md">
               <VehicleManagement />

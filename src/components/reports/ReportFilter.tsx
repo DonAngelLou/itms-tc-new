@@ -1,37 +1,17 @@
-// src/components/ReportFilter.tsx
+// src/components/reports/ReportFilter.tsx
+import React from "react";
 
-import React, { useState } from 'react';
+const ReportFilter: React.FC = () => {
+  return (
+    <div className="p-4 bg-gray-800 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold text-gray-100">Filter Reports</h3>
+      <select className="p-2 rounded bg-gray-700 text-gray-100 w-full">
+        <option value="all">All</option>
+        <option value="vehicle">By Vehicle</option>
+        <option value="trip">By Trip</option>
+      </select>
+    </div>
+  );
+};
 
-interface ReportFilterProps {
-    onFilterChange: (filters: any) => void;
-}
-
-export default function ReportFilter({ onFilterChange }: ReportFilterProps) {
-    const [filters, setFilters] = useState({
-        destination: '',
-        vehicle_type: '',
-        driver: '',
-        start_date: '',
-        end_date: '',
-    });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
-    };
-
-    const applyFilters = () => {
-        onFilterChange(filters);
-    };
-
-    return (
-        <div className="filter-container">
-            <input type="text" name="destination" placeholder="Destination" onChange={handleChange} />
-            <input type="text" name="vehicle_type" placeholder="Vehicle Type" onChange={handleChange} />
-            <input type="text" name="driver" placeholder="Driver" onChange={handleChange} />
-            <input type="date" name="start_date" onChange={handleChange} />
-            <input type="date" name="end_date" onChange={handleChange} />
-            <button onClick={applyFilters}>Apply Filters</button>
-        </div>
-    );
-}
+export default ReportFilter;

@@ -1,42 +1,25 @@
-// src/app/vehicles/VehicleDetails.tsx
+import React from "react";
+import { useVehicleContext } from "@/context/VehicleProvider";
+import VehicleStatusUpdate from "@/components/vehicles/VehicleStatusUpdate";
+import ViolationList from "@/app/vehicles/ViolationList";
+import QRCodeModal from "@/components/vehicles/QRCodeModal";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { fetchVehicleDetails, fetchVehicleViolations } from '@/lib/api';
-import QRCodeModal from '@/app/vehicles/QRCodeModal';
-import ViolationList from '@/app/vehicles/ViolationList';
-import VehicleStatusUpdate from '@/app/vehicles/VehicleStatusUpdate';
-import { Vehicle } from '@/types/vehicleTypes';
+const VehicleDetails: React.FC = () => {
+  const { selectedVehicle } = useVehicleContext();
 
-export default function VehicleDetails() {
-    const router = useRouter();
-    const { vehicleId } = router.query;
-    const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-    const [violations, setViolations] = useState([]);
+  if (!selectedVehicle) return <p>Select a vehicle to view details.</p>;
 
-    useEffect(() => {
-        const loadVehicle = async () => {
-            if (vehicleId) {
-                const data = await fetchVehicleDetails(Number(vehicleId));
-                setVehicle(data);
-                const violationData = await fetchVehicleViolations(Number(vehicleId));
-                setViolations(violationData);
-            }
-        };
-        loadVehicle();
-    }, [vehicleId]);
+  return (
+    <div className="bg-gray-900 p-6 rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold mb-4">{selectedVehicle.model}</h2>
+      <p>Year: {selectedVehicle.year}</p>
+      <p>Color: {selectedVehicle.color}</p>
+      <p>Capacity: {selectedVehicle.capacity}</p>
+      <VehicleStatusUpdate vehicleId={selectedVehicle.id} />
+      <QRCodeModal value={selectedVehicle.model} />
+      <ViolationList violations={selectedVehicle.violations} />
+    </div>
+  );
+};
 
-    if (!vehicle) return <p>Loading...</p>;
-
-    return (
-        <div>
-            <h2>{vehicle.model}</h2>
-            <p>Type: {vehicle.type}</p>
-            <p>Year: {vehicle.year}</p>
-            <p>Status: {vehicle.status}</p>
-            <QRCodeModal vehicle={vehicle} />
-            <VehicleStatusUpdate vehicleId={vehicle.id} />
-            <ViolationList violations={violations} />
-        </div>
-    );
-}
+export default VehicleDetails;

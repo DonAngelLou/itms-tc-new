@@ -1,6 +1,6 @@
 // src/components/bookings/PaymentSummary.tsx
 import React, { useEffect, useState } from 'react';
-import axiosInstance from '@/lib/axiosInstance';
+import { fetchPayments } from '@/lib/api'; // Import the mock fetchPayments function
 
 interface Payment {
   id: number;
@@ -14,16 +14,15 @@ export default function PaymentSummary() {
   const [filterStatus, setFilterStatus] = useState('pending');
 
   useEffect(() => {
-    async function fetchPayments() {
+    async function loadPayments() {
       try {
-        // Ensure the correct endpoint path
-        const response = await axiosInstance.get('/api/submit-payment/', { params: { status: filterStatus } });
-        setPayments(response.data);
+        const data = await fetchPayments(filterStatus); // Use the mock fetchPayments function
+        setPayments(Array.isArray(data) ? data : []); // Ensure payments is always set to an array
       } catch (error) {
         console.error('Failed to fetch payments:', error);
       }
     }
-    fetchPayments();
+    loadPayments();
   }, [filterStatus]);
 
   return (

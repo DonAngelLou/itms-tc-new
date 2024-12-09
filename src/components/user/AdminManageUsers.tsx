@@ -1,67 +1,41 @@
-// src/components/AdminManageUsers.tsx
+// src/components/user/AdminManageUsers.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axiosInstance";
-import AccessControl from "@/components/user/AccessControl";
-
-interface UserProfile {
-  id: number;
-  username: string;
-  role: string;
-}
+import React from "react";
+import { useUserContext } from "@/context/UserContext";
 
 const AdminManageUsers: React.FC = () => {
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const { users, updateUserRole } = useUserContext();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const response = await axiosInstance.get("/user-profiles/");
-      setUsers(response.data);
-    };
-    fetchUsers();
-  }, []);
-
-  const handleRoleChange = async (userId: number, newRole: string) => {
-    await axiosInstance.patch(`/user-profiles/${userId}/`, { role: newRole });
-    setUsers((prev) => prev.map(user => user.id === userId ? { ...user, role: newRole } : user));
-  };
+  if (!Array.isArray(users)) {
+    return <p className="text-center text-red-500">No users found.</p>;
+  }
 
   return (
-    <AccessControl allowedRoles={["Admin"]}>
-      <div className="p-8 space-y-8">
-        <h2 className="text-2xl font-semibold">Manage Users</h2>
-        <table className="w-full border">
-          <thead>
-            <tr>
-              <th className="p-2 border">Username</th>
-              <th className="p-2 border">Role</th>
-              <th className="p-2 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="p-2 border">{user.username}</td>
-                <td className="p-2 border">
-                  <select
-                    value={user.role}
-                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                  >
-                    <option value="ReadOnly">ReadOnly</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Admin">Admin</option>
-                  </select>
-                </td>
-                <td className="p-2 border">
-                  <button onClick={() => handleRoleChange(user.id, "ReadOnly")} className="bg-red-500 text-white p-2 rounded">Set ReadOnly</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </AccessControl>
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Manage Users</h2>
+      <ul className="space-y-4">
+        {users.map((user) => (
+          <li key={user.id} className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <div>
+              <strong>Name:</strong> {user.name}
+            </div>
+            <div>
+              <strong>Email:</strong> {user.email}
+            </div>
+            <div>
+              <strong>Role:</strong> {user.role}
+            </div>
+            <button
+              onClick={() => updateUserRole(user.id, "Staff")}
+              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
+            >
+              Set Role to Staff
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 };
 

@@ -1,23 +1,20 @@
-// src/components/VehicleCard.tsx
-
-import React from 'react';
-import Link from 'next/link';
-import { Vehicle } from '@/types/vehicleTypes';
+import React from "react";
+import { Vehicle } from "@/context/VehicleProvider";
 
 interface VehicleCardProps {
-    vehicle: Vehicle;
+  vehicle: Vehicle;
+  onSelect: () => void;
 }
 
-export default function VehicleCard({ vehicle }: VehicleCardProps) {
-    return (
-        <Link href={`/vehicles/${vehicle.id}`}>
-            <a>
-                <div>
-                    <h3>{vehicle.model}</h3>
-                    <p>Type: {vehicle.type}</p>
-                    <p>Status: {vehicle.status}</p>
-                </div>
-            </a>
-        </Link>
-    );
-}
+const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onSelect }) => {
+  return (
+    <div onClick={onSelect} className="cursor-pointer bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition">
+      <h3 className="text-lg font-bold">{vehicle.model}</h3>
+      <p>Year: {vehicle.year}</p>
+      <p>Capacity: {vehicle.capacity}</p>
+      <p>Status: {vehicle.status}</p>
+    </div>
+  );
+};
+
+export default VehicleCard;

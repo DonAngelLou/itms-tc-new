@@ -1,29 +1,23 @@
-// src/components/Maintenance/MaintenanceOverview.tsx
+// src/components/maintenance/MaintenanceOverview.tsx
 "use client";
-import React, { useState, useEffect } from "react";
-import axios from "@/lib/api";
-import MaintenanceItem from "@/components/maintenance/MaintenanceItem";
-import { Maintenance } from "@/types/apiTypes";
+
+import React from "react";
+import { useMaintenanceContext } from "@/context/MaintenanceContext";
+import MaintenanceItem from "./MaintenanceItem";
 
 const MaintenanceOverview: React.FC = () => {
-  const [maintenanceList, setMaintenanceList] = useState<Maintenance[]>([]);
-
-  useEffect(() => {
-    const fetchMaintenance = async () => {
-      const { data } = await axios.get<Maintenance[]>("/maintenance/upcoming_maintenance/");
-      setMaintenanceList(data);
-    };
-    fetchMaintenance();
-  }, []);
+  const { maintenanceItems } = useMaintenanceContext();
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold">Maintenance Schedule</h2>
-      <ul className="mt-4">
-        {maintenanceList.map((maintenance) => (
-          <MaintenanceItem key={maintenance.id} maintenance={maintenance} />
-        ))}
-      </ul>
+    <div className="bg-gray-900 p-6 rounded-lg shadow-md">
+      <h3 className="text-xl font-semibold text-gray-100 mb-4">Maintenance Overview</h3>
+      {maintenanceItems.length > 0 ? (
+        maintenanceItems.map((item) => (
+          <MaintenanceItem key={item.id} {...item} />
+        ))
+      ) : (
+        <p className="text-gray-400">No maintenance scheduled.</p>
+      )}
     </div>
   );
 };

@@ -1,24 +1,33 @@
-// src/components/DriverCard.tsx
-
-import React from 'react';
-import { Driver } from '@/types/driverTypes';
+// src/components/drivers/DriverCard.tsx
+import React from "react";
+import { useDriverContext } from "@/context/DriverContext";
+import { Driver } from "@/context/DriverContext";
+import ProfilePictureUpload from "./ProfilePictureUpload";
+import ViolationTracking from "@/components/drivers/ViolationTracking";
 
 interface DriverCardProps {
-    driver: Driver;
+  driver: Driver;
 }
 
-export default function DriverCard({ driver }: DriverCardProps) {
-    return (
-        <div className="p-4 border rounded shadow-sm">
-            <img 
-                src={driver.profile_picture || '/default-profile.png'} 
-                alt={`${driver.name}'s profile`} 
-                className="w-16 h-16 rounded-full mb-2"
-            />
-            <h3 className="text-lg font-semibold">{driver.name}</h3>
-            <p>Status: {driver.status}</p>
-            <p>License: {driver.license_number}</p>
-            <p>Last NFC Tap: {driver.last_nfc_tap_time ? new Date(driver.last_nfc_tap_time).toLocaleString() : 'N/A'}</p>
-        </div>
-    );
-}
+const DriverCard: React.FC<DriverCardProps> = ({ driver }) => {
+  const { uploadProfilePicture } = useDriverContext();
+
+  // Function to handle profile picture upload
+  const handleProfilePictureUpload = (picture: string) => {
+    uploadProfilePicture(driver.id, picture);
+  };
+
+  return (
+    <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h3 className="text-lg font-bold text-gray-100">{driver.name}</h3>
+      <p>License: {driver.license}</p>
+      <p>Status: {driver.status}</p>
+      <p>Last NFC Tap: {new Date(driver.lastNFCTap).toLocaleString()}</p>
+      {/* Pass the required props to ProfilePictureUpload */}
+      <ProfilePictureUpload driverId={driver.id} onUpload={handleProfilePictureUpload} />
+      <ViolationTracking driverId={driver.id} violations={driver.violations || []} />
+    </div>
+  );
+};
+
+export default DriverCard;

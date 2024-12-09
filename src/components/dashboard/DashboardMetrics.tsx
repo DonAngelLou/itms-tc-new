@@ -1,44 +1,24 @@
-// src/components/DashboardMetrics.tsx
-import React, { useEffect, useState } from 'react';
-import axiosInstance from '@/lib/axiosInstance';
+// DashboardMetrics.tsx
+import React from "react";
 
-interface Metrics {
+interface MetricsProps {
   totalBookings: number;
   totalRevenue: number;
-  totalTrips: number;
 }
 
-export default function DashboardMetrics() {
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
-
-  useEffect(() => {
-    async function fetchMetrics() {
-      try {
-        const response = await axiosInstance.get('/dashboard/statistics/');
-        setMetrics(response.data);
-      } catch (error) {
-        console.error('Failed to fetch metrics:', error);
-      }
-    }
-    fetchMetrics();
-  }, []);
-
-  if (!metrics) return <p>Loading...</p>;
-
+const DashboardMetrics: React.FC<MetricsProps> = ({ totalBookings, totalRevenue }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div className="p-4 bg-white shadow rounded-lg">
-        <h3 className="text-lg font-semibold">Total Bookings</h3>
-        <p className="text-2xl">{metrics.totalBookings}</p>
+    <div className="grid grid-cols-2 gap-6">
+      <div className="p-6 bg-gray-800 rounded-lg shadow-md text-center">
+        <h3 className="text-lg font-semibold text-gray-100">Total Bookings</h3>
+        <p className="text-3xl font-bold text-blue-500">{totalBookings}</p>
       </div>
-      <div className="p-4 bg-white shadow rounded-lg">
-        <h3 className="text-lg font-semibold">Total Revenue</h3>
-        <p className="text-2xl">${metrics.totalRevenue}</p>
-      </div>
-      <div className="p-4 bg-white shadow rounded-lg">
-        <h3 className="text-lg font-semibold">Total Trips</h3>
-        <p className="text-2xl">{metrics.totalTrips}</p>
+      <div className="p-6 bg-gray-800 rounded-lg shadow-md text-center">
+        <h3 className="text-lg font-semibold text-gray-100">Total Revenue</h3>
+        <p className="text-3xl font-bold text-green-500">${totalRevenue.toFixed(2)}</p>
       </div>
     </div>
   );
-}
+};
+
+export default DashboardMetrics;

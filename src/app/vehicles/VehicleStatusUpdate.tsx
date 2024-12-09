@@ -1,29 +1,24 @@
-// src/app/vehicles/VehicleStatusUpdate.tsx
 "use client";
 
-import React, { useState } from 'react';
-import { updateVehicleStatus } from '@/lib/api';
+import React, { useState } from "react";
 
-interface VehicleStatusUpdateProps {
-    vehicleId: number;
-}
+const VehicleStatusUpdate: React.FC = () => {
+  const [status, setStatus] = useState("Operational");
 
-export default function VehicleStatusUpdate({ vehicleId }: VehicleStatusUpdateProps) {
-    const [status, setStatus] = useState('');
+  return (
+    <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+      <label className="block text-gray-100 font-semibold mb-2">Update Status</label>
+      <select
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+        className="p-2 bg-gray-700 text-gray-100 rounded w-full"
+      >
+        <option value="Operational">Operational</option>
+        <option value="Maintenance">Maintenance</option>
+        <option value="Parked">Parked</option>
+      </select>
+    </div>
+  );
+};
 
-    const handleStatusUpdate = async () => {
-        await updateVehicleStatus(vehicleId, status);
-        alert('Status updated');
-    };
-
-    return (
-        <div>
-            <select onChange={(e) => setStatus(e.target.value)} value={status}>
-                <option value="parked">Parked</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="operational">Operational</option>
-            </select>
-            <button onClick={handleStatusUpdate}>Update Status</button>
-        </div>
-    );
-}
+export default VehicleStatusUpdate;

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axiosInstance";
+import { fetchAnnouncements, postAnnouncement } from "@/lib/api";
 
 interface Announcement {
   title: string;
@@ -17,20 +17,20 @@ const AnnouncementsPage: React.FC = () => {
   const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
-    async function fetchAnnouncements() {
-      const response = await axiosInstance.get("/announcements/");
-      setAnnouncements(response.data);
+    async function loadAnnouncements() {
+      const data = await fetchAnnouncements();
+      setAnnouncements(Array.isArray(data) ? data : []); // Ensure announcements is an array
     }
-    fetchAnnouncements();
+    loadAnnouncements();
   }, []);
 
-  const postAnnouncement = async () => {
-    await axiosInstance.post("/announcements/", { title, content, is_public: isPublic });
+  const handlePostAnnouncement = async () => {
+    await postAnnouncement({ title, content, is_public: isPublic });
     setTitle("");
     setContent("");
     setIsPublic(true);
-    const response = await axiosInstance.get("/announcements/");
-    setAnnouncements(response.data);
+    const data = await fetchAnnouncements();
+    setAnnouncements(data);
   };
 
   return (
@@ -60,7 +60,7 @@ const AnnouncementsPage: React.FC = () => {
         <label>
           <input type="checkbox" checked={isPublic} onChange={() => setIsPublic(!isPublic)} /> Public
         </label>
-        <button onClick={postAnnouncement} className="bg-blue-500 text-white p-2 rounded">Post</button>
+        <button onClick={handlePostAnnouncement} className="bg-blue-500 text-white p-2 rounded">Post</button>
       </div>
     </div>
   );

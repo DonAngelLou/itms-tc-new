@@ -1,19 +1,21 @@
-// src/app/bookings/page.tsx
+// src/pages/bookings.tsx
 "use client";
 
-import React from 'react';
-import BookingList from '@/components/bookings/BookingList';
-import PaymentSummary from '@/components/bookings/PaymentSummary';
+import React from "react";
+import { BookingProvider } from "@/context/BookingContext";
+import BookingList from "@/components/bookings/BookingList";
+import BookingCreate from "@/components/bookings/BookingCreate";
 
-export default function BookingsPage() {
+const BookingsPage: React.FC = () => {
   return (
-    <div className="p-4 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Booking Management</h1>
-      <BookingList />
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Payment Management</h2>
-        <PaymentSummary />
+    <BookingProvider>
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Bookings Management</h1>
+        <BookingCreate />
+        <BookingList />
       </div>
-    </div>
+    </BookingProvider>
   );
-}
+};
+
+export default BookingsPage;

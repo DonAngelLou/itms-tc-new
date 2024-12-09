@@ -1,116 +1,33 @@
-// src/components/user/AuditLogs.tsx
+// src/components/users/AuditLogs.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
-import axios from "@/lib/api";
+import React from "react";
+import { useUserContext } from "@/context/UserContext";
 
-const AuditLogs: React.FC = () => {
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [filters, setFilters] = useState({ user: "", action: "", model: "" });
-
-  useEffect(() => {
-    fetchAuditLogs();
-  }, [filters]);
-
-  const fetchAuditLogs = async () => {
-    try {
-      const { data } = await axios.get("/audit-logs/", {
-        params: filters,
-      });
-      setAuditLogs(data);
-    } catch (error) {
-      console.error("Error fetching audit logs:", error);
-    }
-  };
-
-  const handleExport = async () => {
-    try {
-      const response = await axios.get("/audit-logs/export/", {
-        params: filters,
-        responseType: "blob",
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "audit_logs.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Error exporting audit logs:", error);
-    }
-  };
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
+export default function AuditLogs() {
+  const { auditLogs } = useUserContext();
 
   return (
-    <div className="p-4 bg-white rounded-md shadow">
-      <h3 className="text-lg font-semibold mb-4">Audit Logs</h3>
-      
-      {/* Filters */}
-      <div className="flex space-x-4 mb-4">
-        <input
-          type="text"
-          name="user"
-          placeholder="Filter by user"
-          value={filters.user}
-          onChange={handleFilterChange}
-          className="p-2 border rounded-md"
-        />
-        <select
-          name="action"
-          value={filters.action}
-          onChange={handleFilterChange}
-          className="p-2 border rounded-md"
-        >
-          <option value="">Filter by action</option>
-          <option value="CREATE">Create</option>
-          <option value="UPDATE">Update</option>
-          <option value="DELETE">Delete</option>
-        </select>
-        <input
-          type="text"
-          name="model"
-          placeholder="Filter by model"
-          value={filters.model}
-          onChange={handleFilterChange}
-          className="p-2 border rounded-md"
-        />
-        <button onClick={handleExport} className="p-2 bg-blue-600 text-white rounded-md">
-          Export Logs
-        </button>
-      </div>
-
-      {/* Logs Table */}
-      <table className="min-w-full bg-white border border-gray-200">
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4">Audit Logs</h2>
+      <table className="w-full text-left">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b">User</th>
-            <th className="py-2 px-4 border-b">Action</th>
-            <th className="py-2 px-4 border-b">Model</th>
-            <th className="py-2 px-4 border-b">Object ID</th>
-            <th className="py-2 px-4 border-b">Timestamp</th>
-            <th className="py-2 px-4 border-b">Details</th>
+            <th className="p-2">Action</th>
+            <th className="p-2">Performed By</th>
+            <th className="p-2">Timestamp</th>
           </tr>
         </thead>
         <tbody>
-          {auditLogs.map((log: any, index: number) => (
-            <tr key={index} className="text-center border-b">
-              <td className="py-2 px-4">{log.user}</td>
-              <td className="py-2 px-4">{log.action}</td>
-              <td className="py-2 px-4">{log.model_name}</td>
-              <td className="py-2 px-4">{log.object_id}</td>
-              <td className="py-2 px-4">{new Date(log.timestamp).toLocaleString()}</td>
-              <td className="py-2 px-4">{log.details}</td>
+          {auditLogs.map((log) => (
+            <tr key={log.id}>
+              <td className="p-2">{log.action}</td>
+              <td className="p-2">{log.performedBy}</td>
+              <td className="p-2">{new Date(log.timestamp).toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
-};
-
-export default AuditLogs;
+}

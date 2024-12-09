@@ -1,48 +1,36 @@
-// src/components/TripPopularityChart.tsx
-import React, { useEffect, useState } from 'react';
-import { Pie } from 'react-chartjs-2';
-import axiosInstance from '@/lib/axiosInstance';
+// TripPopularityChart.tsx
+import React from "react";
+import { Bar } from "react-chartjs-2";
 
-interface ChartData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    backgroundColor: string[];
-  }[];
-}
+const TripPopularityChart: React.FC = () => {
+  const data = {
+    labels: ["City A", "City B", "City C"],
+    datasets: [
+      {
+        label: "Trips",
+        data: [50, 75, 100],
+        backgroundColor: ["hsl(60, 65%, 50%)", "hsl(180, 65%, 50%)", "hsl(300, 65%, 50%)"],
+      },
+    ],
+  };
 
-export default function TripPopularityChart() {
-  const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] });
-
-  useEffect(() => {
-    async function fetchTripPopularity() {
-      try {
-        const response = await axiosInstance.get('/dashboard/stats/');
-        const destinations = response.data.trip_popularity.map((item: any) => item.destination);
-        const counts = response.data.trip_popularity.map((item: any) => item.count);
-
-        setChartData({
-          labels: destinations,
-          datasets: [
-            {
-              label: 'Trip Popularity',
-              data: counts,
-              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-            },
-          ],
-        });
-      } catch (error) {
-        console.error('Failed to fetch trip popularity data:', error);
-      }
-    }
-    fetchTripPopularity();
-  }, []);
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: "hsl(0, 0%, 30%)" } },
+    },
+  };
 
   return (
-    <div className="p-4 bg-white shadow rounded-lg">
-      <h3 className="text-lg font-semibold mb-4">Trip Popularity</h3>
-      <Pie data={chartData} />
+    <div className="p-6 bg-gray-800 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold text-gray-100 mb-4">Trip Popularity</h3>
+      <Bar data={data} options={options} />
     </div>
   );
-}
+};
+
+export default TripPopularityChart;

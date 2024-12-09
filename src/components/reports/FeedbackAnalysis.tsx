@@ -1,27 +1,19 @@
-// src/components/FeedbackAnalysis.tsx
-import React, { useEffect, useState } from 'react';
-import axiosInstance from '@/lib/axiosInstance';
+// src/components/feedback/FeedbackAnalysis.tsx
+import React from "react";
+import { useFeedbackContext } from "@/context/FeedbackContext";
 
-export default function FeedbackAnalysis() {
-  const [analysis, setAnalysis] = useState({ avgRating: 0, totalFeedback: 0 });
-
-  useEffect(() => {
-    async function fetchAnalysis() {
-      try {
-        const response = await axiosInstance.get('/feedback-analysis/');
-        setAnalysis(response.data);
-      } catch (error) {
-        console.error('Error fetching feedback analysis:', error);
-      }
-    }
-    fetchAnalysis();
-  }, []);
+const FeedbackAnalysis: React.FC = () => {
+  const { feedbacks } = useFeedbackContext();
+  const positiveFeedback = feedbacks.filter((fb) => fb.rating >= 4).length;
+  const negativeFeedback = feedbacks.filter((fb) => fb.rating <= 2).length;
 
   return (
-    <div>
-      <h4>Feedback Analysis</h4>
-      <p>Average Rating: {analysis.avgRating}</p>
-      <p>Total Feedback Count: {analysis.totalFeedback}</p>
+    <div className="p-6 bg-gray-800 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold text-gray-100">Feedback Analysis</h3>
+      <p>Positive Feedback: {positiveFeedback}</p>
+      <p>Negative Feedback: {negativeFeedback}</p>
     </div>
   );
-}
+};
+
+export default FeedbackAnalysis;

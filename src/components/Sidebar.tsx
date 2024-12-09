@@ -1,7 +1,7 @@
-// src/components/Sidebar.tsx
 "use client";
 
 import React, { useCallback, useState } from "react";
+import { useAuth } from "@/context/AuthContext"; // Ensure correct path to AuthContext
 import { useRouter, usePathname } from "next/navigation";
 import {
   User2,
@@ -14,32 +14,33 @@ import {
   ChartBarIcon,
   MonitorIcon,
   MailIcon,
-  SettingsIcon
 } from "lucide-react";
 import clsx from "clsx";
 
 const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { logout } = useAuth(); // Get logout function from AuthContext
   const router = useRouter();
   const pathname = usePathname();
 
   const toggleSidebar = useCallback(() => setIsCollapsed((prev) => !prev), []);
   const handleLogout = useCallback(async () => {
-    // Handle logout logic
-    router.replace("/login"); // Redirect to login after logout
-  }, [router]);
+    try {
+      await logout(); // Call the logout function from AuthContext
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  }, [logout]);
 
   const sidebarItems = [
     { name: "Profile", icon: <User2 size={20} />, route: "/user" },
     { name: "Dashboard", icon: <HomeIcon size={20} />, route: "/dashboard" },
-    { name: "Vehicles", icon: <CarIcon size={20} />, route: "/vehicles" },
+    // { name: "Vehicles", icon: <CarIcon size={20} />, route: "/vehicles" },
     { name: "Trips", icon: <CalendarIcon size={20} />, route: "/trips" },
-    { name: "Bookings", icon: <ClipboardListIcon size={20} />, route: "/bookings" },
-    { name: "Drivers", icon: <UsersIcon size={20} />, route: "/drivers" },
+    { name: "Operators", icon: <UsersIcon size={20} />, route: "/drivers" },
     { name: "Reports", icon: <ChartBarIcon size={20} />, route: "/reports" },
     { name: "Announcements", icon: <MonitorIcon size={20} />, route: "/announcements" },
     { name: "Chat", icon: <MailIcon size={20} />, route: "/chat" },
-    { name: "Maintenance", icon: <SettingsIcon size={20} />, route: "/maintenance" }, // Added Settings
   ];
 
   return (

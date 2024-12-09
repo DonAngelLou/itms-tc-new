@@ -1,32 +1,41 @@
 // src/components/bookings/PaymentStatusUpdate.tsx
-import React, { useState } from 'react';
-import axiosInstance from '@/lib/axiosInstance';
+import React from "react";
+import { useBookingContext } from "@/context/BookingContext";
 
 interface PaymentStatusUpdateProps {
-  bookingId: number;
+  bookingId: string;
 }
 
-export default function PaymentStatusUpdate({ bookingId }: PaymentStatusUpdateProps) {
-  const [paymentStatus, setPaymentStatus] = useState('pending');
+const PaymentStatusUpdate: React.FC<PaymentStatusUpdateProps> = ({ bookingId }) => {
+  const { updateBookingStatus } = useBookingContext();
 
-  async function handlePaymentStatusUpdate(newStatus: string) {
-    try {
-      await axiosInstance.patch(`/bookings/${bookingId}/update_payment_status/`, { status: newStatus });
-      setPaymentStatus(newStatus);
-    } catch (error) {
-      console.error('Failed to update payment status:', error);
-    }
-  }
+  const handleStatusChange = (status: "confirmed" | "pending" | "cancelled") => {
+    updateBookingStatus(bookingId, status);
+  };
 
   return (
-    <div>
-      <h4>Update Payment Status</h4>
-      <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)}>
-        <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
-        <option value="rejected">Rejected</option>
-      </select>
-      <button onClick={() => handlePaymentStatusUpdate(paymentStatus)}>Update Payment Status</button>
+    <div className="p-4 bg-gray-700 rounded-md mt-2 text-white">
+      <h4 className="text-lg">Update Status</h4>
+      <button
+        onClick={() => handleStatusChange("confirmed")}
+        className="bg-green-600 text-white p-2 rounded-md mr-2"
+      >
+        Confirm
+      </button>
+      <button
+        onClick={() => handleStatusChange("pending")}
+        className="bg-yellow-600 text-white p-2 rounded-md mr-2"
+      >
+        Pending
+      </button>
+      <button
+        onClick={() => handleStatusChange("cancelled")}
+        className="bg-red-600 text-white p-2 rounded-md"
+      >
+        Cancel
+      </button>
     </div>
   );
-}
+};
+
+export default PaymentStatusUpdate;

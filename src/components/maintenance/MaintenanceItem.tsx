@@ -1,27 +1,40 @@
-// src/components/Maintenance/MaintenanceItem.tsx
+// src/components/maintenance/MaintenanceItem.tsx
+"use client";
+
 import React from "react";
-import { Maintenance } from "@/types/apiTypes";
+import { useMaintenanceContext } from "@/context/MaintenanceContext";
 
 interface MaintenanceItemProps {
-  maintenance: Maintenance;
+  id: string;
+  vehicleName: string;
+  date: string;
+  description: string;
+  status: string;
 }
 
-const MaintenanceItem: React.FC<MaintenanceItemProps> = ({ maintenance }) => {
+const MaintenanceItem: React.FC<MaintenanceItemProps> = ({ id, vehicleName, date, description, status }) => {
+  const { updateMaintenanceStatus } = useMaintenanceContext();
+
+  const handleStatusChange = (newStatus: string) => {
+    updateMaintenanceStatus(id, newStatus as "Scheduled" | "In Progress" | "Completed");
+  };
+
   return (
-    <li className="p-4 border rounded-md my-2 bg-gray-100">
-      <div>
-        <span className="font-bold">Vehicle:</span> {maintenance.vehicle}
-      </div>
-      <div>
-        <span className="font-bold">Scheduled Date:</span> {maintenance.scheduled_date}
-      </div>
-      <div>
-        <span className="font-bold">Description:</span> {maintenance.description}
-      </div>
-      <div>
-        <span className="font-bold">Completed:</span> {maintenance.is_completed ? "Yes" : "No"}
-      </div>
-    </li>
+    <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-4">
+      <h4 className="text-lg font-bold text-gray-100">{vehicleName}</h4>
+      <p>Date: {new Date(date).toLocaleDateString()}</p>
+      <p>Description: {description}</p>
+      <p>Status: {status}</p>
+      <select
+        value={status}
+        onChange={(e) => handleStatusChange(e.target.value)}
+        className="w-full p-2 mt-2 bg-gray-700 text-gray-100 rounded"
+      >
+        <option value="Scheduled">Scheduled</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+      </select>
+    </div>
   );
 };
 

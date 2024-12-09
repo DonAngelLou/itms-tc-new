@@ -1,7 +1,7 @@
-// src/components/ReportList.tsx
+// src/components/reports/ReportList.tsx
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { fetchReports } from '@/lib/api'; // Import the mock function
 
 interface ReportListProps {
     filters: any;
@@ -17,12 +17,16 @@ interface ReportItem {
 }
 
 export default function ReportList({ filters }: ReportListProps) {
-    const [reportData, setReportData] = useState<ReportItem[]>([]); // Specify type as an array of ReportItem
+    const [reportData, setReportData] = useState<ReportItem[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
-            const response = await axios.get<ReportItem[]>('/api/reports', { params: filters });
-            setReportData(response.data);
+            try {
+                const data = await fetchReports(filters);  // Use mock data function
+                setReportData(data);
+            } catch (error) {
+                console.error('Error fetching report data:', error);
+            }
         };
         fetchData();
     }, [filters]);

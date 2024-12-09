@@ -1,14 +1,16 @@
-// src/app/drivers/page.tsx
 "use client";
 
-import React from 'react';
-import DriverList from './DriverList';
+import React from "react";
+import { DriverProvider } from "@/context/DriverContext";
+import DriverList from "@/components/drivers/DriverList";
 
 export default function DriversPage() {
-    return (
-        <div>
-            <h1>Drivers</h1>
-            <DriverList />
-        </div>
-    );
+  return (
+    <DriverProvider>
+      <div className="p-8 bg-background text-foreground min-h-screen">
+        <DriverList />
+      </div>
+    </DriverProvider>
+  );
 }
+

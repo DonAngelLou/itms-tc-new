@@ -1,98 +1,33 @@
-// src/components/BookingList.tsx
-import React, { useEffect, useState } from 'react';
-import axiosInstance from '@/lib/axiosInstance';
-import BookingDetail from '@/components/bookings/BookingDetail';
+// src/components/bookings/BookingList.tsx
+import React from "react";
+import { useBookingContext, Booking } from "@/context/BookingContext";
+import BookingDetail from "./BookingDetail";
 
-interface Booking {
-  id: number;
-  booking_code: string;
-  status: string;
-  payment_status: string;
-  passenger_name?: string;
-  trip: {
-    destination: {
-      name: string;
-    };
-    vehicle: {
-      vehicle_type: string;
-    };
-  };
-  created_at: string;
-}
-
-export default function BookingList() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [filters, setFilters] = useState({
-    date: '',
-    destination: '',
-    status: '',
-    paymentStatus: '',
-    vehicleType: '',
-    driver: ''
-  });
-
-  useEffect(() => {
-    async function fetchBookings() {
-      try {
-        const response = await axiosInstance.get('/bookings/', { params: filters });
-        
-        // Ensure response data is an array before setting it to avoid map errors
-        if (Array.isArray(response.data)) {
-          setBookings(response.data);
-        } else {
-          console.error("Unexpected response format:", response.data);
-          setBookings([]); // Default to an empty array if response is unexpected
-        }
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
-        setBookings([]); // Default to an empty array on error
-      }
-    }
-    fetchBookings();
-  }, [filters]);
+const BookingList: React.FC = () => {
+  const { bookings } = useBookingContext();
 
   return (
-    <div>
-      <h2>Bookings</h2>
-      <input
-        type="text"
-        placeholder="Destination"
-        value={filters.destination}
-        onChange={(e) => setFilters({ ...filters, destination: e.target.value })}
-      />
-      <input
-        type="date"
-        placeholder="Date"
-        value={filters.date}
-        onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-      />
-      <select
-        value={filters.status}
-        onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-      >
-        <option value="">All Statuses</option>
-        <option value="pending">Pending</option>
-        <option value="confirmed">Confirmed</option>
-        <option value="cancelled">Cancelled</option>
-      </select>
-      <select
-        value={filters.paymentStatus}
-        onChange={(e) => setFilters({ ...filters, paymentStatus: e.target.value })}
-      >
-        <option value="">All Payment Statuses</option>
-        <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
-        <option value="rejected">Rejected</option>
-      </select>
-      <ul>
+    <div className="p-6 bg-gray-800 rounded-lg shadow-md">
+      <h3 className="text-xl font-bold text-white mb-4">Booking List</h3>
+      <div className="space-y-4">
         {bookings.map((booking) => (
-          <li key={booking.id} onClick={() => setSelectedBooking(booking)}>
-            {booking.booking_code} - {booking.status} - {booking.payment_status}
-          </li>
+          <BookingCard key={booking.id} booking={booking} />
         ))}
-      </ul>
-      {selectedBooking && <BookingDetail booking={selectedBooking} />}
+      </div>
     </div>
   );
-}
+};
+
+const BookingCard: React.FC<{ booking: Booking }> = ({ booking }) => {
+  return (
+    <div className="p-4 bg-gray-700 rounded-md shadow-md">
+      <p className="text-white">Code: {booking.bookingCode}</p>
+      <p className="text-white">Passenger: {booking.passengerName}</p>
+      <p className="text-white">Destination: {booking.destination}</p>
+      <p className="text-white">Status: {booking.status}</p>
+      <BookingDetail booking={booking} />
+    </div>
+  );
+};
+
+export default BookingList;

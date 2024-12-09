@@ -1,21 +1,21 @@
 // src/app/trips/page.tsx
 "use client";
+// src/app/trips/page.tsx or your specific page file
+import React from "react";
+import { TripProvider } from "@/context/TripContext";
+import TripList from "@/components/trips/TripList";
+import TripForm from "@/components/trips/TripForm";
 
-import React, { useState } from 'react';
-import TripList from '@/components/trips/TripList';
-import TripForm from '@/components/trips/TripForm';
-
-export default function TripsPage() {
-  const [showForm, setShowForm] = useState(false);
-
+const TripsPage: React.FC = () => {
   return (
-    <div className="p-4 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Trip Management</h1>
-      <button onClick={() => setShowForm(!showForm)}>
-        {showForm ? 'Hide Form' : 'Create New Trip'}
-      </button>
-      {showForm && <TripForm onSubmit={() => setShowForm(false)} />}
-      <TripList />
-    </div>
+    <TripProvider>
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">Trip Management</h1>
+        <TripList />
+        <TripForm />
+      </div>
+    </TripProvider>
   );
-}
+};
+
+export default TripsPage;

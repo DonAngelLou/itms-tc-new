@@ -1,49 +1,46 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { login } from '@/lib/auth';
+"use client";
+import React, { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
-export default function LoginPage() {
+const LoginPage = () => {
+  const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter();
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setError('');
-
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       await login(username, password);
-      router.push('/dashboard'); // Redirect to the dashboard on success
+      window.location.href = '/dashboard'; // Redirect on success
     } catch (err) {
-      setError('Invalid credentials. Please try again.');
+      setError('Invalid credentials');
     }
-  }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="mb-4 text-2xl font-semibold">Login</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-80">
+    <div className="flex items-center justify-center min-h-screen">
+      <form className="w-1/3 p-4 bg-white shadow-md" onSubmit={handleLogin}>
+        <h1 className="text-xl font-bold mb-4">Login</h1>
+        {error && <div className="mb-2 text-red-500">{error}</div>}
         <input
           type="text"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="p-2 border rounded"
-          required
+          className="w-full p-2 mb-4 border rounded"
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="p-2 border rounded"
-          required
+          className="w-full p-2 mb-4 border rounded"
         />
-        <button type="submit" className="p-2 bg-blue-600 text-white rounded">Login</button>
-        {error && <p className="text-red-500">{error}</p>}
+        <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">Login</button>
       </form>
     </div>
   );
-}
+};
+
+export default LoginPage;

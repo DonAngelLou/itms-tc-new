@@ -1,48 +1,49 @@
-// src/components/RevenueByVehicleChart.tsx
-import React, { useEffect, useState } from 'react';
-import { Bar } from 'react-chartjs-2';
-import axiosInstance from '@/lib/axiosInstance';
+// RevenueByVehicleChart.tsx
+import React from "react";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-interface ChartData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    backgroundColor: string;
-  }[];
-}
+// Register the necessary components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export default function RevenueByVehicleChart() {
-  const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] });
+const RevenueByVehicleChart: React.FC = () => {
+  const data = {
+    labels: ["Bus", "Van", "Car"],
+    datasets: [
+      {
+        label: "Revenue",
+        data: [30000, 20000, 15000],
+        backgroundColor: ["#4F46E5", "#60A5FA", "#34D399"],
+      },
+    ],
+  };
 
-  useEffect(() => {
-    async function fetchRevenueByVehicleType() {
-      try {
-        const response = await axiosInstance.get('/dashboard/stats/');
-        const vehicleTypes = response.data.revenue_by_vehicle_type.map((item: any) => item.trip__vehicle__vehicle_type);
-        const revenues = response.data.revenue_by_vehicle_type.map((item: any) => item.total_revenue);
-
-        setChartData({
-          labels: vehicleTypes,
-          datasets: [
-            {
-              label: 'Revenue by Vehicle Type',
-              data: revenues,
-              backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            },
-          ],
-        });
-      } catch (error) {
-        console.error('Failed to fetch revenue data:', error);
-      }
-    }
-    fetchRevenueByVehicleType();
-  }, []);
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" as const },
+      title: { display: true, text: "Revenue by Vehicle Type" },
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, grid: { color: "rgba(255, 255, 255, 0.1)" } },
+    },
+  };
 
   return (
-    <div className="p-4 bg-white shadow rounded-lg mb-6">
-      <h3 className="text-lg font-semibold mb-4">Revenue by Vehicle Type</h3>
-      <Bar data={chartData} />
+    <div className="p-6 bg-gray-800 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold text-gray-100 mb-4">Revenue by Vehicle Type</h3>
+      <Bar data={data} options={options} />
     </div>
   );
-}
+};
+
+export default RevenueByVehicleChart;

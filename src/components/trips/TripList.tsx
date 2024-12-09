@@ -1,88 +1,100 @@
 // src/components/trips/TripList.tsx
-import React, { useEffect, useState } from 'react';
-import axiosInstance from '@/lib/axiosInstance';
-import TripDetail from '@/components/trips/TripDetail';
+"use client";
 
-interface Trip {
-  id: number;
-  destination: { name: string };
-  vehicle: { vehicle_type: string };
-  driver: { name: string };
-  departure_time: string;
-  status: string;
-  fare: number;
-}
+import React, { useState } from "react";
+import { useTripContext } from "@/context/TripContext";
+import TripDetails from "@/components/trips/TripDetail";
+import { format } from "date-fns";
 
-export default function TripList() {
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
-  const [filters, setFilters] = useState({
-    date: '',
-    destination: '',
-    vehicleType: '',
-    status: ''
-  });
+const TripList: React.FC = () => {
+  const { trips } = useTripContext();
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchTrips() {
-      try {
-        const response = await axiosInstance.get('/trips/', { params: filters });
-        
-        if (Array.isArray(response.data)) {
-          setTrips(response.data);
-        } else {
-          console.error("Unexpected data format:", response.data);
-          setTrips([]);
-        }
-      } catch (error) {
-        console.error('Error fetching trips:', error);
-        setTrips([]); // Ensure trips is an empty array in case of error
-      }
-    }
-    fetchTrips();
-  }, [filters]);
+  // Filter trips based on selected date
+  const filteredTrips = selectedDate
+    ? trips.filter((trip) => trip.date === selectedDate)
+    : trips;
+
+  // Categorize trips by status
+  const upcomingTrips = filteredTrips.filter((trip) => trip.status === "upcoming");
+  const pastTrips = filteredTrips.filter((trip) => trip.status === "departed");
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(e.target.value);
+  };
+
+  const handleTripClick = (tripId: string) => {
+    setSelectedTripId(tripId);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedTripId(null);
+  };
 
   return (
-    <div>
-      <h2>Trips</h2>
-      
-      {/* Filter Inputs */}
-      <input
-        type="text"
-        placeholder="Destination"
-        value={filters.destination}
-        onChange={(e) => setFilters({ ...filters, destination: e.target.value })}
-      />
-      <input
-        type="date"
-        value={filters.date}
-        onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-      />
-      <select
-        value={filters.status}
-        onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-      >
-        <option value="">All Statuses</option>
-        <option value="scheduled">Scheduled</option>
-        <option value="departed">Departed</option>
-        <option value="arrived">Arrived</option>
-      </select>
-      
-      {/* Trip List */}
-      <ul>
-        {trips.length > 0 ? (
-          trips.map((trip) => (
-            <li key={trip.id} onClick={() => setSelectedTrip(trip)}>
-              {trip.destination.name} - {trip.vehicle.vehicle_type} - {trip.status}
-            </li>
+    <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4">Trip Management</h2>
+
+      {/* Date Filter */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2">Filter by Date</label>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={handleDateChange}
+          className="input-field w-full"
+        />
+      </div>
+
+      {/* Upcoming Trips */}
+      <h3 className="text-lg font-semibold mb-2">Upcoming Trips</h3>
+      <div className="space-y-4">
+        {upcomingTrips.length > 0 ? (
+          upcomingTrips.map((trip) => (
+            <div
+              key={trip.id}
+              className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800"
+              onClick={() => handleTripClick(trip.id)}
+            >
+              <h4 className="text-lg font-semibold">{trip.destination}</h4>
+              <p className="text-sm">Date: {format(new Date(trip.date), "yyyy-MM-dd")}</p>
+              <p className="text-sm">Time: {trip.time}</p>
+              <p className="text-sm">Status: {trip.status}</p>
+            </div>
           ))
         ) : (
-          <li>No trips available.</li>
+          <p className="text-gray-500">No upcoming trips found.</p>
         )}
-      </ul>
-      
-      {/* Trip Detail */}
-      {selectedTrip && <TripDetail trip={selectedTrip} />}
+      </div>
+
+      {/* Past Trips */}
+      <h3 className="text-lg font-semibold mb-2 mt-6">Past Trips</h3>
+      <div className="space-y-4">
+        {pastTrips.length > 0 ? (
+          pastTrips.map((trip) => (
+            <div
+              key={trip.id}
+              className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800"
+              onClick={() => handleTripClick(trip.id)}
+            >
+              <h4 className="text-lg font-semibold">{trip.destination}</h4>
+              <p className="text-sm">Date: {format(new Date(trip.date), "yyyy-MM-dd")}</p>
+              <p className="text-sm">Time: {trip.time}</p>
+              <p className="text-sm">Status: {trip.status}</p>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500">No past trips found.</p>
+        )}
+      </div>
+
+      {/* Trip Details Modal */}
+      {selectedTripId && (
+        <TripDetails tripId={selectedTripId} onClose={handleCloseModal} />
+      )}
     </div>
   );
-}
+};
+
+export default TripList;

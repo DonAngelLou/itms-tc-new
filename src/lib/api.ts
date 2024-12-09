@@ -79,17 +79,17 @@ export const getDriverTripHistory = async (driverId: number) => {
 };
 
 export const fetchDriverData = async (driverId: string) => {
-  const response = await axios.get(`/api/drivers/${driverId}/`);
+  const response = await api.get(`/drivers/${driverId}/`);
   return response.data;
 };
 
 export const requestEditDriver = async (driverId: string, editedDriver: any) => {
-  const response = await axios.post(`/api/drivers/${driverId}/request-edit/`, editedDriver);
+  const response = await api.post(`/drivers/${driverId}/request-edit/`, editedDriver);
   return response.data;
 };
 
 export const requestDeleteDriver = async (driverId: string) => {
-  const response = await axios.post(`/api/drivers/${driverId}/request-delete/`);
+  const response = await api.post(`/drivers/${driverId}/request-delete/`);
   return response.data;
 };
 

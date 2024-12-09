@@ -53,7 +53,8 @@ const DriverList: React.FC = () => {
     setIsAddFormOpen(false);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return "bg-gray-500 hover:bg-gray-600";
     switch (status.toLowerCase()) {
       case "active":
         return "bg-green-500 hover:bg-green-600";

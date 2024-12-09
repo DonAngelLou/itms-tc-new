@@ -164,7 +164,7 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
 
         <div className="flex items-center gap-4">
           <Image
-            src={driver.profilePicture}
+            src={driver.profilePicture || "/default-profile.png"}
             alt={`${driver.name}'s profile`}
             width={100}
             height={100}
@@ -193,7 +193,7 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
           onClick={() => setShowViolations(true)}
           className="w-full"
         >
-          Violations ({driver.violations.length})
+          Violations ({driver.violations ? driver.violations.length : 0})
         </Button>
       </div>
     </ScrollArea>
@@ -247,10 +247,10 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
                           <p><strong>Capacity:</strong> {vehicle.capacity}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-2 mb-2">
-                          <Image src={vehicle.rightImage} alt="Right view" width={100} height={100} />
-                          <Image src={vehicle.leftImage} alt="Left view" width={100} height={100} />
-                          <Image src={vehicle.backImage} alt="Back view" width={100} height={100} />
-                          <Image src={vehicle.frontImage} alt="Front view" width={100} height={100} />
+                          <Image src={vehicle.rightImage || "/default-image.png"} alt="Right view" width={100} height={100} />
+                          <Image src={vehicle.leftImage || "/default-image.png"} alt="Left view" width={100} height={100} />
+                          <Image src={vehicle.backImage || "/default-image.png"} alt="Back view" width={100} height={100} />
+                          <Image src={vehicle.frontImage || "/default-image.png"} alt="Front view" width={100} height={100} />
                         </div>
                         <div className="flex gap-2 mt-2">
                           <Button
@@ -360,12 +360,18 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {driver.tripHistory.map((trip, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell>{trip}</TableCell>
-                      <TableCell>Regular Trip</TableCell>
+                  {driver.tripHistory && driver.tripHistory.length > 0 ? (
+                    driver.tripHistory.map((trip, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell>{trip}</TableCell>
+                        <TableCell>Regular Trip</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={2}>No trip history available.</TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </motion.div>
@@ -419,7 +425,7 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
             <DialogTitle>Driver Violations</DialogTitle>
           </DialogHeader>
           <ScrollArea className="h-[300px]">
-            {driver.violations.length > 0 ? (
+            {driver.violations && driver.violations.length > 0 ? (
               <ul className="space-y-2">
                 {driver.violations.map((violation, index) => (
                   <li key={index} className="flex items-center gap-2">

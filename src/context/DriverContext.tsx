@@ -1,6 +1,6 @@
 // src/context/DriverContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { fetchDriverData, requestEditDriver, requestDeleteDriver } from '../lib/api';
+import api, { fetchDriverData, requestEditDriver, requestDeleteDriver } from '../lib/api';
 
 export enum TravelStatus {
   NoTrip = "No Trip",
@@ -88,8 +88,8 @@ const mockRequests: DriverRequest[] = [];
 const DriverContext = createContext<DriverContextType | undefined>(undefined);
 
 export const DriverProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [drivers, setDrivers] = useState<Driver[]>(mockDrivers);
-  const [driverRequests, setDriverRequests] = useState<DriverRequest[]>(mockRequests);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [driverRequests, setDriverRequests] = useState<DriverRequest[]>([]);
 
   const updateNfcCode = (driverId: string, newNfcCode: string) => {
     setDrivers((prevDrivers) =>
@@ -136,13 +136,7 @@ export const DriverProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   const updateDriverStatus = async (driverId: string, status: string) => {
-    await fetch(`/api/drivers/${driverId}/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
-    });
+    await api.patch(`/drivers/${driverId}/`, { status });
     fetchDrivers();
   };
 
@@ -165,9 +159,8 @@ export const DriverProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   const fetchDrivers = async () => {
-    const response = await fetch("/api/drivers/");
-    const data = await response.json();
-    setDrivers(data);
+    const response = await api.get("/drivers/");
+    setDrivers(response.data);
   };
 
   const fetchDriver = async (driverId: string) => {

@@ -1,6 +1,8 @@
 // src/context/DriverContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import api, { fetchDriverData, requestEditDriver, requestDeleteDriver } from '../lib/api';
+
+// Remove API imports
+// import api, { fetchDriverData, requestEditDriver, requestDeleteDriver } from '../lib/api';
 
 export enum TravelStatus {
   NoTrip = "No Trip",
@@ -44,9 +46,9 @@ interface DriverContextType {
   updateDriverStatus: (driverId: string, newStatus: Driver["applicationStatus"]) => void;
   approveRequest: (requestId: string) => void;
   rejectRequest: (requestId: string) => void;
-  fetchDriver: (driverId: string) => Promise<Driver>;
-  editDriver: (driverId: string, editedDriver: any) => Promise<void>;
-  deleteDriver: (driverId: string) => Promise<void>;
+  fetchDriver: (driverId: string) => Promise<Driver | undefined>;
+  editDriver: (driverId: string, editedDriver: Partial<Driver>) => void;
+  deleteDriver: (driverId: string) => void;
 }
 
 const mockDrivers: Driver[] = [
@@ -54,42 +56,42 @@ const mockDrivers: Driver[] = [
     id: "d1",
     name: "John Doe",
     profilePicture: "/images/john.png",
-    licenseInfo: "License #123456789",
+    licenseInfo: "License #A123456",
     applicationStatus: "Active",
     travelStatus: TravelStatus.InTerminal,
     type: "Operator",
     vehicleInfo: "Bus - Plate #XYZ-1234",
-    nfcCode: "NFC-12345",
+    nfcCode: "NFC-1001",
     lastNfcTap: null,
-    violations: ["Speeding"],
-    tripHistory: ["2024-11-10", "2024-11-12"],
-    citizenship: "USA",
-    address: "123 Main St, Anytown, USA",
+    violations: ["Speeding", "Unauthorized Stop"],
+    tripHistory: ["2023-09-10", "2023-09-12"],
+    citizenship: "American",
+    address: "123 Main St, Cityville, USA",
   },
   {
     id: "d2",
-    name: "Jamil Sultan",
-    profilePicture: "/images/john.png",
-    licenseInfo: "License #123456789",
+    name: "Jane Smith",
+    profilePicture: "/images/jane.png",
+    licenseInfo: "License #B987654",
     applicationStatus: "Active",
-    travelStatus: TravelStatus.InTerminal,
+    travelStatus: TravelStatus.Departed,
     type: "Rounder",
-    nfcCode: "NFC-54321",
+    nfcCode: "NFC-1002",
     lastNfcTap: null,
-    violations: ["Speeding"],
-    tripHistory: ["2024-11-10", "2024-11-12"],
-    citizenship: "USA",
-    address: "123 Main St, Anytown, USA",
+    violations: ["Late Arrival"],
+    tripHistory: ["2023-09-11", "2023-09-13"],
+    citizenship: "Canadian",
+    address: "456 Elm St, Townsville, Canada",
   },
 ];
 
-const mockRequests: DriverRequest[] = [];
+const mockDriverRequests: DriverRequest[] = [];
 
 const DriverContext = createContext<DriverContextType | undefined>(undefined);
 
 export const DriverProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [driverRequests, setDriverRequests] = useState<DriverRequest[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>(mockDrivers);
+  const [driverRequests, setDriverRequests] = useState<DriverRequest[]>(mockDriverRequests);
 
   const updateNfcCode = (driverId: string, newNfcCode: string) => {
     setDrivers((prevDrivers) =>
@@ -135,9 +137,12 @@ export const DriverProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     alert(`Driver request submitted: ${request.type}`);
   };
 
-  const updateDriverStatus = async (driverId: string, status: string) => {
-    await api.patch(`/drivers/${driverId}/`, { status });
-    fetchDrivers();
+  const updateDriverStatus = (driverId: string, newStatus: Driver["applicationStatus"]) => {
+    setDrivers(prevDrivers =>
+      prevDrivers.map(driver =>
+        driver.id === driverId ? { ...driver, applicationStatus: newStatus } : driver
+      )
+    );
   };
 
   const approveRequest = (requestId: string) => {
@@ -158,27 +163,27 @@ export const DriverProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     alert(`Request rejected for ID: ${requestId}`);
   };
 
-  const fetchDrivers = async () => {
-    const response = await api.get("/drivers/");
-    setDrivers(response.data);
-  };
-
   const fetchDriver = async (driverId: string) => {
-    const driver = await fetchDriverData(driverId);
-    setDrivers((prevDrivers) => [...prevDrivers, driver]);
-    return driver;
+    return drivers.find(driver => driver.id === driverId);
   };
 
-  const editDriver = async (driverId: string, editedDriver: any) => {
-    await requestEditDriver(driverId, editedDriver);
+  const editDriver = (driverId: string, editedDriver: Partial<Driver>) => {
+    setDrivers(prevDrivers =>
+      prevDrivers.map(driver =>
+        driver.id === driverId ? { ...driver, ...editedDriver } : driver
+      )
+    );
   };
 
-  const deleteDriver = async (driverId: string) => {
-    await requestDeleteDriver(driverId);
+  const deleteDriver = (driverId: string) => {
+    setDrivers(prevDrivers => prevDrivers.filter(driver => driver.id !== driverId));
   };
 
   useEffect(() => {
-    fetchDrivers();
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      setDrivers(mockDrivers);
+    }
   }, []);
 
   return (

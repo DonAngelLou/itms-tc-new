@@ -27,8 +27,8 @@ api.interceptors.request.use(async (config) => {
 });
 
 // Vehicles API
-export const getVehicles = async (): Promise<any[]> => {
-  const response = await api.get("/vehicles/");
+export const getVehicles = async (params?: any): Promise<any[]> => {
+  const response = await api.get("/vehicles/", { params });
   return response.data;
 };
 
@@ -91,6 +91,16 @@ export const requestEditDriver = async (driverId: string, editedDriver: any) => 
 export const requestDeleteDriver = async (driverId: string) => {
   const response = await api.post(`/drivers/${driverId}/request-delete/`);
   return response.data;
+};
+
+export const getDriverVehicles = async (driverId: string): Promise<any[]> => {
+  try {
+    const response = await api.get(`/drivers/${driverId}/vehicles/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching driver's vehicles:", error);
+    throw error;
+  }
 };
 
 // Driver Time Records (DTR) API

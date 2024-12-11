@@ -5,7 +5,7 @@ import { useDriverContext } from "@/context/DriverContext";
 import { useVehicleContext } from "@/context/VehicleProvider";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Edit2, Save, X, Trash2, AlertTriangle, ChevronDown, ChevronUp, AlertCircle, MessageSquare, PenToolIcon } from 'lucide-react';
+import { Edit2, Save, X, Trash2, AlertTriangle, ChevronDown, ChevronUp, AlertCircle, MessageSquare, PenToolIcon as Tool, Car } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +27,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface DriverDetailsModalProps {
@@ -53,21 +55,9 @@ interface Vehicle {
   feedback: number;
 }
 
-const mockVehicles: Vehicle[] = [
-  { id: "1", lttNumber: "110", type: "Van", status: "Operational", travelStatus: "Available", model: "Model A", year: 2022, plateNumber: "ABC-123", color: "White", capacity: 10, rightImage: "/images/vehicle_right.jpg", leftImage: "/images/vehicle_left.jpg", backImage: "/images/vehicle_back.jpg", frontImage: "/images/vehicle_front.jpg", violations: 2, feedback: 5 },
-  { id: "2", lttNumber: "111", type: "Bus", status: "Maintenance", travelStatus: "Unavailable", model: "Model B", year: 2023, plateNumber: "DEF-456", color: "Blue", capacity: 20, rightImage: "/images/vehicle_right.jpg", leftImage: "/images/vehicle_left.jpg", backImage: "/images/vehicle_back.jpg", frontImage: "/images/vehicle_front.jpg", violations: 0, feedback: 3 },
-  { id: "3", lttNumber: "112", type: "Van", status: "Operational", travelStatus: "Available", model: "Model C", year: 2021, plateNumber: "GHI-789", color: "Red", capacity: 15, rightImage: "/images/vehicle_right.jpg", leftImage: "/images/vehicle_left.jpg", backImage: "/images/vehicle_back.jpg", frontImage: "/images/vehicle_front.jpg", violations: 1, feedback: 4 },
-];
-
-const mockVehicleHistory = [
-  { lttNumber: "110", driver: "John Doe", date: "2024-01-15" },
-  { lttNumber: "110", driver: "Jane Smith", date: "2024-01-14" },
-  { lttNumber: "111", driver: "John Doe", date: "2024-01-13" },
-];
-
 const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClose }) => {
   const { drivers, updateDriverStatus } = useDriverContext();
-  const { fetchVehicles, updateVehicleStatus, fetchViolations } = useVehicleContext();
+  const { fetchVehicles, updateVehicleStatus, fetchViolations, fetchFeedback } = useVehicleContext();
   const driver = drivers.find((d) => d.id === driverId);
   const [isEditing, setIsEditing] = useState(false);
   const [editedDriver, setEditedDriver] = useState(driver);
@@ -82,11 +72,12 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
   const [maintenanceConfirmText, setMaintenanceConfirmText] = useState("");
   const [vehicleViolations, setVehicleViolations] = useState<any[]>([]);
   const [showVehicleViolations, setShowVehicleViolations] = useState(false);
+  const [vehicleFeedback, setVehicleFeedback] = useState<any[]>([]);
+  const [showVehicleFeedback, setShowVehicleFeedback] = useState(false);
 
   useEffect(() => {
     const loadVehicles = async () => {
-      const allVehicles = await fetchVehicles();
-      const driverVehicles = allVehicles.filter(v => v.driverId === driverId);
+      const driverVehicles = await fetchVehicles(driverId);
       setVehicles(driverVehicles);
     };
     loadVehicles();
@@ -148,10 +139,10 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
   };
 
   const DriverInfo = () => (
-    <ScrollArea className="h-full">
-      <div className="space-y-4 p-4">
-        <div className="flex justify-between items-start">
-          <h2 className="text-2xl font-semibold">{driver.name}</h2>
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>{driver.name}</CardTitle>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" onClick={handleEdit}>
               <Edit2 className="h-4 w-4" />
@@ -161,8 +152,9 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
             </Button>
           </div>
         </div>
-
-        <div className="flex items-center gap-4">
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-4 mb-4">
           <Image
             src={driver.profilePicture || "/default-profile.png"}
             alt={`${driver.name}'s profile`}
@@ -178,7 +170,7 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
           </div>
         </div>
 
-        <Separator />
+        <Separator className="my-4" />
 
         <div className="space-y-2">
           <p><strong>NFC Code:</strong> {driver.nfcCode}</p>
@@ -191,194 +183,196 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
         <Button 
           variant="outline" 
           onClick={() => setShowViolations(true)}
-          className="w-full"
+          className="w-full mt-4"
         >
           Violations ({driver.violations ? driver.violations.length : 0})
         </Button>
-      </div>
-    </ScrollArea>
+      </CardContent>
+    </Card>
   );
 
   const VehicleManagement = () => (
-    <div className="bg-white rounded-lg p-4 h-full shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Vehicle Management</h2>
-      <ScrollArea className="h-[calc(100%-2rem)]">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>LTT number</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {vehicles.map((vehicle) => (
-              <React.Fragment key={vehicle.id}>
-                <TableRow
-                  className={cn(
-                    "cursor-pointer hover:bg-muted/50",
-                    selectedVehicle?.id === vehicle.id && "bg-muted"
-                  )}
-                  onClick={() => toggleVehicleExpand(vehicle.id)}
-                >
-                  <TableCell>{vehicle.lttNumber}</TableCell>
-                  <TableCell>{vehicle.type}</TableCell>
-                  <TableCell>{vehicle.status}</TableCell>
-                  <TableCell>
-                    {expandedVehicle === vehicle.id ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle>Vehicle Management</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[calc(100vh-16rem)]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>LTT number</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {vehicles.map((vehicle) => (
+                <React.Fragment key={vehicle.id}>
+                  <TableRow
+                    className={cn(
+                      "cursor-pointer hover:bg-muted/50",
+                      selectedVehicle?.id === vehicle.id && "bg-muted"
                     )}
-                  </TableCell>
-                </TableRow>
-                {expandedVehicle === vehicle.id && (
-                  <TableRow>
-                    <TableCell colSpan={4}>
-                      <div className="p-2 bg-muted/20">
-                        <h4 className="font-medium mb-2">Vehicle Information</h4>
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                          <p><strong>Travel Status:</strong> {vehicle.travelStatus}</p>
-                          <p><strong>Model:</strong> {vehicle.model}</p>
-                          <p><strong>Year:</strong> {vehicle.year}</p>
-                          <p><strong>Plate Number:</strong> {vehicle.plateNumber}</p>
-                          <p><strong>Color:</strong> {vehicle.color}</p>
-                          <p><strong>Capacity:</strong> {vehicle.capacity}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                          <Image src={vehicle.rightImage || "/default-image.png"} alt="Right view" width={100} height={100} />
-                          <Image src={vehicle.leftImage || "/default-image.png"} alt="Left view" width={100} height={100} />
-                          <Image src={vehicle.backImage || "/default-image.png"} alt="Back view" width={100} height={100} />
-                          <Image src={vehicle.frontImage || "/default-image.png"} alt="Front view" width={100} height={100} />
-                        </div>
-                        <div className="flex gap-2 mt-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleVehicleSelect(vehicle)}
-                          >
-                            View History
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setShowVehicleViolations(true)}
-                          >
-                            <AlertCircle className="mr-2 h-4 w-4" />
-                            Violations ({vehicle.violations})
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                          >
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            Feedback ({vehicle.feedback})
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleMaintenanceClick(vehicle)}
-                          >
-                            <PenToolIcon className="mr-2 h-4 w-4" />
-                            Maintenance
-                          </Button>
-                        </div>
-                      </div>
+                    onClick={() => toggleVehicleExpand(vehicle.id)}
+                  >
+                    <TableCell>{vehicle.lttNumber}</TableCell>
+                    <TableCell>{vehicle.type}</TableCell>
+                    <TableCell>{vehicle.status}</TableCell>
+                    <TableCell>
+                      {expandedVehicle === vehicle.id ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
                     </TableCell>
                   </TableRow>
-                )}
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
-    </div>
+                  {expandedVehicle === vehicle.id && (
+                    <TableRow>
+                      <TableCell colSpan={4}>
+                        <Card className="bg-muted/20">
+                          <CardHeader>
+                            <CardTitle>Vehicle Information</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-2 gap-2 mb-4">
+                              <p><strong>Travel Status:</strong> {vehicle.travelStatus}</p>
+                              <p><strong>Model:</strong> {vehicle.model}</p>
+                              <p><strong>Year:</strong> {vehicle.year}</p>
+                              <p><strong>Plate Number:</strong> {vehicle.plateNumber}</p>
+                              <p><strong>Color:</strong> {vehicle.color}</p>
+                              <p><strong>Capacity:</strong> {vehicle.capacity}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 mb-4">
+                              <Image src={vehicle.rightImage || "/default-image.png"} alt="Right view" width={100} height={100} className="rounded-md" />
+                              <Image src={vehicle.leftImage || "/default-image.png"} alt="Left view" width={100} height={100} className="rounded-md" />
+                              <Image src={vehicle.backImage || "/default-image.png"} alt="Back view" width={100} height={100} className="rounded-md" />
+                              <Image src={vehicle.frontImage || "/default-image.png"} alt="Front view" width={100} height={100} className="rounded-md" />
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleVehicleSelect(vehicle)}
+                              >
+                                <Car className="mr-2 h-4 w-4" />
+                                View History
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setShowVehicleViolations(true)}
+                              >
+                                <AlertCircle className="mr-2 h-4 w-4" />
+                                Violations ({vehicle.violations})
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setShowVehicleFeedback(true)}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Feedback ({vehicle.feedback})
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMaintenanceClick(vehicle)}
+                              >
+                                <Tool className="mr-2 h-4 w-4" />
+                                Maintenance
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 
   const TravelHistory = () => (
-    <div className="bg-white rounded-lg p-4 h-full shadow-md">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Travel History</h2>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={!showVehicleHistory ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowVehicleHistory(false)}
-          >
-            Driver
-          </Button>
-          <Button
-            variant={showVehicleHistory ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowVehicleHistory(true)}
-            disabled={!selectedVehicle}
-          >
-            Vehicle
-          </Button>
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>Travel History</CardTitle>
+          <Tabs defaultValue="driver" className="w-[200px]">
+            <TabsList>
+              <TabsTrigger value="driver" onClick={() => setShowVehicleHistory(false)}>Driver</TabsTrigger>
+              <TabsTrigger value="vehicle" onClick={() => setShowVehicleHistory(true)} disabled={!selectedVehicle}>Vehicle</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
-      </div>
-
-      <ScrollArea className="h-[calc(100%-3rem)]">
-        <AnimatePresence mode="wait">
-          {showVehicleHistory ? (
-            <motion.div
-              key="vehicle-history"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Driver</TableHead>
-                    <TableHead>Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {/* Replace this with actual vehicle history data */}
-                  <TableRow>
-                    <TableCell>2024-01-15</TableCell>
-                    <TableCell>{driver.name}</TableCell>
-                    <TableCell>Regular Trip</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="driver-history"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {driver.tripHistory && driver.tripHistory.length > 0 ? (
-                    driver.tripHistory.map((trip, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell>{trip}</TableCell>
-                        <TableCell>Regular Trip</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[calc(100vh-16rem)]">
+          <AnimatePresence mode="wait">
+            {showVehicleHistory ? (
+              <motion.div
+                key="vehicle-history"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={2}>No trip history available.</TableCell>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Driver</TableHead>
+                      <TableHead>Details</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </ScrollArea>
-    </div>
+                  </TableHeader>
+                  <TableBody>
+                    {/* Replace this with actual vehicle history data */}
+                    <TableRow>
+                      <TableCell>2024-01-15</TableCell>
+                      <TableCell>{driver.name}</TableCell>
+                      <TableCell>Regular Trip</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="driver-history"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Details</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {driver.tripHistory && driver.tripHistory.length > 0 ? (
+                      driver.tripHistory.map((trip, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell>{trip}</TableCell>
+                          <TableCell>Regular Trip</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={2}>No trip history available.</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 
   return (
@@ -478,6 +472,28 @@ const DriverDetailsModal: React.FC<DriverDetailsModalProps> = ({ driverId, onClo
               </ul>
             ) : (
               <p>No violations recorded for this vehicle.</p>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showVehicleFeedback} onOpenChange={setShowVehicleFeedback}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Vehicle Feedback</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[300px]">
+            {vehicleFeedback.length > 0 ? (
+              <ul className="space-y-2">
+                {vehicleFeedback.map((feedback, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-blue-500" />
+                    {feedback.content}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No feedback recorded for this vehicle.</p>
             )}
           </ScrollArea>
         </DialogContent>

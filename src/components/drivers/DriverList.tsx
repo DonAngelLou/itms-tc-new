@@ -21,7 +21,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   ScrollArea,
   ScrollBar,
@@ -53,19 +52,6 @@ const DriverList: React.FC = () => {
     setIsAddFormOpen(false);
   };
 
-  const getStatusColor = (status: string | undefined) => {
-    if (!status) return "bg-gray-500 hover:bg-gray-600";
-    switch (status.toLowerCase()) {
-      case "active":
-        return "bg-green-500 hover:bg-green-600";
-      case "inactive":
-        return "bg-red-500 hover:bg-red-600";
-      case "pending":
-        return "bg-yellow-500 hover:bg-yellow-600";
-      default:
-        return "bg-gray-500 hover:bg-gray-600";
-    }
-  };
 
   const filteredDrivers = drivers.filter(driver =>
     driver.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -98,7 +84,6 @@ const DriverList: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="min-w-[150px]">Name</TableHead>
-                <TableHead className="min-w-[100px]">Status</TableHead>
                 <TableHead className="min-w-[100px]">Type</TableHead>
                 <TableHead className="min-w-[120px]">Travel Status</TableHead>
               </TableRow>
@@ -111,11 +96,6 @@ const DriverList: React.FC = () => {
                   onClick={() => handleViewDetails(driver.id)}
                 >
                   <TableCell className="font-medium">{driver.name}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(driver.applicationStatus)}>
-                      {driver.applicationStatus}
-                    </Badge>
-                  </TableCell>
                   <TableCell>{driver.type}</TableCell>
                   <TableCell>{driver.travelStatus}</TableCell>
                 </TableRow>
